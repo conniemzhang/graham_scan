@@ -1,19 +1,11 @@
-import math
+""" graham scan algorithm, implemented by @conniemzhang on Github """
 
+import math
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.path as path
-import matplotlib.patches as patches
 import scipy.spatial as spatial
-from matplotlib.animation import FuncAnimation
 from sklearn.datasets.samples_generator import make_blobs
 
-
-range_gx = 15
-range_gy = 15
-axis_range = range_gx * 1.8 #adds buffer so you can see all the hulls.
-
-# generate num targets. (0,0) is bottom left.
 def generate_targets(num, range_x, range_y, clustered = False):
     if clustered == False:
         targets = [None] * num
@@ -28,15 +20,12 @@ def generate_targets(num, range_x, range_y, clustered = False):
         cluster_std = [0.8, 1]
 
         targets, Y = make_blobs(n_samples=num, cluster_std=cluster_std, centers=centers, n_features=2, random_state=1)
-        print("scattered targets", targets)
         return targets
 
-# graham scan
 def calculate_hulls(targets):
     # returns array of points in the hull
     def turn(p1, p2, p3):
         print("p1", p1, "p2,", p2, "p3", p3)
-
         return (p2[0] - p1[0])*(p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
 
@@ -50,20 +39,15 @@ def calculate_hulls(targets):
             angle = 0
             if v[0] != 0 or v[1] != 0 :
                 angle = spatial.distance.cosine(u, v)
-            #angle = (np.dot(p0, point) / (np.linalg.norm(p0) * np.linalg.norm(point)))
             sorted_targets[i] = [point[0], point[1], angle]
         return np.array(sorted(sorted_targets, key=lambda x: x[2]))
 
     sorted_targets = sort_by_angle(targets)
-    # hull stack goes [last][][][][][first]
     hull = []
-
-    # pop the last point from the stack if we turn clockwise to reach this point
     for i, p1 in enumerate(sorted_targets):
         print("i", i)
         while len(hull) > 1 and turn(hull[-2], hull[-1], p1) < 0:
             hull.pop()
-            print("found ccw turn, popping from hull")
         hull.append(p1)
     hull.append(sorted_targets[0])
     return np.array(hull)
@@ -75,11 +59,14 @@ def plotme(ax, targets, hull):
     ax.set_xlim(-2, 15)
     ax.plot(targets[:, 0], targets[:,1], 'bo')
     ax.plot(hull[:, 0], hull[:,1], 'ro-')
-    #ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128), init_func=init, blit=True)
     plt.show()
 
 if __name__ == '__main__':
     fig, ax = plt.subplots(1, 1)
+
+    range_gx = 15
+    range_gy = 15
+    axis_range = range_gx * 1.8 #adds buffer so you can see all the hulls.
     targets = np.array(generate_targets(50, range_gx, range_gy, clustered = True))
     #targets = np.loadtxt('testbasic.txt', delimiter="\t")
     hull = calculate_hulls(targets)
