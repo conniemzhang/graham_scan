@@ -25,7 +25,6 @@ def generate_targets(num, range_x, range_y, clustered = False):
 def calculate_hulls(targets):
     # returns array of points in the hull
     def turn(p1, p2, p3):
-        print("p1", p1, "p2,", p2, "p3", p3)
         return (p2[0] - p1[0])*(p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
 
 
@@ -44,8 +43,7 @@ def calculate_hulls(targets):
 
     sorted_targets = sort_by_angle(targets)
     hull = []
-    for i, p1 in enumerate(sorted_targets):
-        print("i", i)
+    for p1 in sorted_targets:
         while len(hull) > 1 and turn(hull[-2], hull[-1], p1) < 0:
             hull.pop()
         hull.append(p1)
